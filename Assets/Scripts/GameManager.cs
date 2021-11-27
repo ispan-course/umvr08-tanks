@@ -44,7 +44,7 @@ namespace Tanks
     {
       Debug.LogWarningFormat("PUN Disconnected was called by PUN with reason {0}", cause);
     }
-    
+
     public void JoinGameRoom()
     {
       var options = new RoomOptions
@@ -57,7 +57,15 @@ namespace Tanks
 
     public override void OnJoinedRoom()
     {
-      Debug.Log("Joined room!!");
+      if (PhotonNetwork.IsMasterClient)
+      {
+        Debug.Log("Created room!!");
+        PhotonNetwork.LoadLevel("GameScene");
+      }
+      else
+      {
+        Debug.Log("Joined room!!");
+      }
     }
   }
 }
