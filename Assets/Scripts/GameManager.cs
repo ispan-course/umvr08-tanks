@@ -1,12 +1,14 @@
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Tanks
 {
   public class GameManager : MonoBehaviourPunCallbacks
   {
     public static GameManager instance;
+    public static GameObject localPlayer;
 
     string gameVersion = "1";
 
@@ -26,6 +28,8 @@ namespace Tanks
 
     void Start()
     {
+      SceneManager.sceneLoaded += OnSceneLoaded;
+
       PhotonNetwork.ConnectUsingSettings();
       PhotonNetwork.GameVersion = gameVersion;
     }
@@ -66,6 +70,17 @@ namespace Tanks
       {
         Debug.Log("Joined room!!");
       }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+      if (!PhotonNetwork.InRoom)
+      {
+        return;
+      }
+
+      localPlayer = PhotonNetwork.Instantiate("TankPlayer", new Vector3(0, 0, 0), Quaternion.identity, 0);
+      Debug.Log("Player Instance ID: " + localPlayer.GetInstanceID());
     }
   }
 }
