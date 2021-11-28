@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Complete
 {
-    public class TankShooting : MonoBehaviour
+    public class TankShooting : MonoBehaviourPunCallbacks
     {
         public int m_PlayerNumber = 1;              // Used to identify the different players.
         public Rigidbody m_Shell;                   // Prefab of the shell.
@@ -23,8 +24,10 @@ namespace Complete
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
 
 
-        private void OnEnable()
+        public override void OnEnable()
         {
+            base.OnEnable();
+
             // When the tank is turned on, reset the launch force and the UI
             m_CurrentLaunchForce = m_MinLaunchForce;
             m_AimSlider.value = m_MinLaunchForce;
@@ -87,11 +90,16 @@ namespace Complete
             m_Fired = true;
 
             // Create an instance of the shell and store a reference to it's rigidbody.
-            Rigidbody shellInstance =
-                Instantiate (m_Shell, m_FireTransform.position, m_FireTransform.rotation) as Rigidbody;
+            GameObject shellInstance = PhotonNetwork.Instantiate(
+                "CompleteShell", 
+                m_FireTransform.position,
+                m_FireTransform.rotation,
+                0);
+            
+            Rigidbody body = shellInstance.GetComponent<Rigidbody>();
 
             // Set the shell's velocity to the launch force in the fire position's forward direction.
-            shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward; 
+            body.velocity = m_CurrentLaunchForce * m_FireTransform.forward; 
 
             // Change the clip to the firing clip and play it.
             m_ShootingAudio.clip = m_FireClip;
