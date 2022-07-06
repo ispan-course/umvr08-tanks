@@ -36,8 +36,13 @@ namespace Tanks
     {
       SceneManager.sceneLoaded += OnSceneLoaded;
 
-      PhotonNetwork.ConnectUsingSettings();
       PhotonNetwork.GameVersion = gameVersion;
+    }
+
+    public bool ConnectToServer(string account)
+    {
+      PhotonNetwork.NickName = account;
+      return PhotonNetwork.ConnectUsingSettings();
     }
 
     public override void OnConnected()
