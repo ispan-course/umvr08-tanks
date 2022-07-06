@@ -10,8 +10,13 @@ namespace Tanks
   {
     public static MainMenu instance;
     private GameObject m_ui;
+
     private TMP_InputField  m_accountInput;
     private Button m_loginButton;
+
+    private TMP_Dropdown m_mapSelector;
+    private TMP_Dropdown m_gameModeSelector;
+    private Button m_createGameButton;
     private Button m_joinGameButton;
 
     void Awake()
@@ -25,8 +30,13 @@ namespace Tanks
       instance = this;
 
       m_ui = transform.FindAnyChild<Transform>("UI").gameObject;
+
       m_accountInput = transform.FindAnyChild<TMP_InputField>("AccountInput");
       m_loginButton = transform.FindAnyChild<Button>("LoginButton");
+
+      m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
+      m_gameModeSelector = transform.FindAnyChild<TMP_Dropdown>("GameModeSelector");
+      m_createGameButton = transform.FindAnyChild<Button>("CreateGameButton");
       m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
 
       ResetUI();
@@ -35,12 +45,20 @@ namespace Tanks
     private void ResetUI()
     {
       m_ui.SetActive(true);
+
       m_accountInput.gameObject.SetActive(true);
       m_loginButton.gameObject.SetActive(true);
+
+      m_mapSelector.gameObject.SetActive(false);
+      m_gameModeSelector.gameObject.SetActive(false);
+      m_createGameButton.gameObject.SetActive(false);
       m_joinGameButton.gameObject.SetActive(false);
       
       m_accountInput.interactable = true;
       m_loginButton.interactable = true;
+      m_mapSelector.interactable = true;
+      m_gameModeSelector.interactable = true;
+      m_createGameButton.interactable = true;
       m_joinGameButton.interactable = true;
     }
 
@@ -77,6 +95,16 @@ namespace Tanks
       }
     }
 
+    public void CreateGame()
+    {
+      GameManager.instance.CreateGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1);
+    }
+
+    public void JoinRandomGame()
+    {
+      GameManager.instance.JoinRandomGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1);
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
       m_ui.SetActive(!PhotonNetwork.InRoom);
@@ -86,6 +114,10 @@ namespace Tanks
     {
       m_accountInput.gameObject.SetActive(false);
       m_loginButton.gameObject.SetActive(false);
+
+      m_mapSelector.gameObject.SetActive(true);
+      m_gameModeSelector.gameObject.SetActive(true);
+      m_createGameButton.gameObject.SetActive(true);
       m_joinGameButton.gameObject.SetActive(true);
     }
   }

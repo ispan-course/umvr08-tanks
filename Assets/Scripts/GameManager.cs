@@ -12,6 +12,10 @@ namespace Tanks
     public static GameObject localPlayer;
     private GameObject defaultSpawnPoint;
 
+    private const string MAP_PROP_KEY = "map";
+    private const string GAME_MODE_PROP_KEY = "gm";
+    private const string AI_PROP_KEY = "ai";
+
     string gameVersion = "1";
 
     void Awake()
@@ -60,6 +64,34 @@ namespace Tanks
       Debug.LogWarningFormat("PUN Disconnected was called by PUN with reason {0}", cause);
     }
 
+    public void CreateGame(int map, int gameMode)
+    {
+      var roomOptions = new RoomOptions();
+      roomOptions.CustomRoomPropertiesForLobby
+        = new[] { MAP_PROP_KEY, GAME_MODE_PROP_KEY, AI_PROP_KEY };
+      roomOptions.CustomRoomProperties
+        = new ExitGames.Client.Photon.Hashtable
+        {
+          { MAP_PROP_KEY, map },
+          { GAME_MODE_PROP_KEY, gameMode }
+        };
+      roomOptions.MaxPlayers = 4;
+
+      PhotonNetwork.CreateRoom(null, roomOptions, null);
+    }
+
+    public void JoinRandomGame(int map, int gameMode)
+    {
+      byte expectedMaxPlayers = 0;
+      var expectedCustomRoomProperties
+        = new ExitGames.Client.Photon.Hashtable
+        {
+          { MAP_PROP_KEY, map },
+          { GAME_MODE_PROP_KEY, gameMode }
+        };
+      PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers);
+    }
+
     public void JoinGameRoom()
     {
       var options = new RoomOptions
@@ -72,15 +104,17 @@ namespace Tanks
 
     public override void OnJoinedRoom()
     {
+      Debug.Log($"Joined room: {PhotonNetwork.CurrentRoom.Name} {PhotonNetwork.CurrentRoom.CustomProperties}");
+
       if (PhotonNetwork.IsMasterClient)
       {
-        Debug.Log("Created room!!");
         PhotonNetwork.LoadLevel("GameScene");
       }
-      else
-      {
-        Debug.Log("Joined room!!");
-      }
+    }
+
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+      Debug.Log($"Join Random Room Failed: ({returnCode}) {message}");
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
