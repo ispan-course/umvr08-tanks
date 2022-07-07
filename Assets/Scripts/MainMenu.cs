@@ -9,15 +9,18 @@ namespace Tanks
   public class MainMenu : MonoBehaviourPunCallbacks
   {
     public static MainMenu instance;
-    private GameObject m_ui;
 
+    private GameObject m_loginUI;
     private TMP_InputField  m_accountInput;
     private Button m_loginButton;
 
+    private GameObject m_lobbyUI;
     private TMP_Dropdown m_mapSelector;
     private TMP_Dropdown m_gameModeSelector;
     private Button m_createGameButton;
     private Button m_joinGameButton;
+
+    private GameObject m_roomUI;
 
     void Awake()
     {
@@ -29,37 +32,34 @@ namespace Tanks
 
       instance = this;
 
-      m_ui = transform.FindAnyChild<Transform>("UI").gameObject;
-
+      m_loginUI = transform.FindAnyChild<Transform>("LoginUI").gameObject;
       m_accountInput = transform.FindAnyChild<TMP_InputField>("AccountInput");
       m_loginButton = transform.FindAnyChild<Button>("LoginButton");
 
+      m_lobbyUI = transform.FindAnyChild<Transform>("LobbyUI").gameObject;
       m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
       m_gameModeSelector = transform.FindAnyChild<TMP_Dropdown>("GameModeSelector");
       m_createGameButton = transform.FindAnyChild<Button>("CreateGameButton");
       m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
+
+      m_roomUI = transform.FindAnyChild<Transform>("RoomUI").gameObject;
 
       ResetUI();
     }
 
     private void ResetUI()
     {
-      m_ui.SetActive(true);
-
-      m_accountInput.gameObject.SetActive(true);
-      m_loginButton.gameObject.SetActive(true);
-
-      m_mapSelector.gameObject.SetActive(false);
-      m_gameModeSelector.gameObject.SetActive(false);
-      m_createGameButton.gameObject.SetActive(false);
-      m_joinGameButton.gameObject.SetActive(false);
-      
+      m_loginUI.SetActive(true);
       m_accountInput.interactable = true;
       m_loginButton.interactable = true;
+
+      m_lobbyUI.SetActive(false);
       m_mapSelector.interactable = true;
       m_gameModeSelector.interactable = true;
       m_createGameButton.interactable = true;
       m_joinGameButton.interactable = true;
+
+      m_roomUI.SetActive(false);
     }
 
     public override void OnEnable()
@@ -92,7 +92,15 @@ namespace Tanks
       if (!GameManager.instance.ConnectToServer(m_accountInput.text))
       {
         Debug.Log("Connect to PUN Failed!!");
+        m_accountInput.interactable = true;
+        m_loginButton.interactable = true;
       }
+    }
+
+    public override void OnConnectedToMaster()
+    {
+      m_loginUI.SetActive(false);
+      m_lobbyUI.SetActive(true);
     }
 
     public void CreateGame()
@@ -107,18 +115,15 @@ namespace Tanks
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-      m_ui.SetActive(!PhotonNetwork.InRoom);
-    }
-
-    public override void OnConnectedToMaster()
-    {
-      m_accountInput.gameObject.SetActive(false);
-      m_loginButton.gameObject.SetActive(false);
-
-      m_mapSelector.gameObject.SetActive(true);
-      m_gameModeSelector.gameObject.SetActive(true);
-      m_createGameButton.gameObject.SetActive(true);
-      m_joinGameButton.gameObject.SetActive(true);
+      if (!PhotonNetwork.InRoom)
+      {
+        ResetUI();
+      }
+      else
+      {
+        m_lobbyUI.SetActive(false);
+        m_roomUI.SetActive(false);
+      }
     }
   }
 }
