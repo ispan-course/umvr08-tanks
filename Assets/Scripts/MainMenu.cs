@@ -111,6 +111,18 @@ namespace Tanks
       m_lobbyUI.SetActive(true);
     }
 
+    public override void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)
+    {
+      var message = $"Lobby List: {lobbyStatistics.Count} lobbies\n";
+      foreach (var lobbyInfo in lobbyStatistics)
+      {
+        message += $"  {lobbyInfo.Name}, {lobbyInfo.Type}, {lobbyInfo.PlayerCount} rooms, " +
+                   $"{lobbyInfo.PlayerCount} players\n";
+      }
+
+      Debug.Log(message);
+    }
+
     public void JoinLobby()
     {
       PhotonNetwork.JoinLobby();
