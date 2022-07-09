@@ -17,6 +17,7 @@ namespace Tanks
     private Button m_loginButton;
 
     private GameObject m_lobbyUI;
+    private TMP_InputField m_lobbyInput;
     private Button m_joinLobbyButton;
     private Button m_leaveLobbyButton;
     private TMP_Dropdown m_mapSelector;
@@ -25,6 +26,8 @@ namespace Tanks
     private Button m_joinGameButton;
 
     private GameObject m_roomUI;
+
+    private Dictionary<string, RoomInfo> cachedRoomList = new Dictionary<string, RoomInfo>();
 
     void Awake()
     {
@@ -41,6 +44,7 @@ namespace Tanks
       m_loginButton = transform.FindAnyChild<Button>("LoginButton");
 
       m_lobbyUI = transform.FindAnyChild<Transform>("LobbyUI").gameObject;
+      m_lobbyInput = transform.FindAnyChild<TMP_InputField>("LobbyInput");
       m_joinLobbyButton = transform.FindAnyChild<Button>("JoinLobbyButton");
       m_leaveLobbyButton = transform.FindAnyChild<Button>("LeaveLobbyButton");
       m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
@@ -60,6 +64,7 @@ namespace Tanks
       m_loginButton.interactable = true;
 
       m_lobbyUI.SetActive(false);
+      m_lobbyInput.interactable = true;
       m_joinLobbyButton.interactable = true;
       m_leaveLobbyButton.interactable = false;
       m_mapSelector.interactable = true;
@@ -68,6 +73,8 @@ namespace Tanks
       m_joinGameButton.interactable = true;
 
       m_roomUI.SetActive(false);
+      
+      cachedRoomList.Clear();
     }
 
     public override void OnEnable()
@@ -125,7 +132,10 @@ namespace Tanks
 
     public void JoinLobby()
     {
-      PhotonNetwork.JoinLobby();
+      cachedRoomList.Clear();
+
+      var typedLobby = new TypedLobby(m_lobbyInput.text, LobbyType.Default);
+      PhotonNetwork.JoinLobby(typedLobby);
     }
 
     public void LeaveLobby()
@@ -136,24 +146,43 @@ namespace Tanks
     public override void OnJoinedLobby()
     {
       Debug.Log($"Joined Lobby: {PhotonNetwork.CurrentLobby.Name} {PhotonNetwork.CurrentLobby.Type}");
-      m_joinLobbyButton.interactable = false;
       m_leaveLobbyButton.interactable = true;
+      cachedRoomList.Clear();
     }
 
     public override void OnLeftLobby()
     {
       // 離開 Lobby 的時候，會加回 Default Lobby
       Debug.Log($"Left Lobby: {PhotonNetwork.CurrentLobby.Name} {PhotonNetwork.CurrentLobby.Type}");
-      m_joinLobbyButton.interactable = true;
       m_leaveLobbyButton.interactable = false;
+      cachedRoomList.Clear();
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
     {
-      var message = $"Room List: {roomList.Count} rooms\n";
-      foreach (var roomInfo in roomList)
+      UpdateCachedRoomList(roomList);
+      printRoomList();
+    }
+
+    private void UpdateCachedRoomList(List<RoomInfo> roomList)
+    {
+      for(int i=0; i < roomList.Count; i++)
       {
-        message += $"  {roomInfo.Name}, {roomInfo.IsOpen}, {roomInfo.PlayerCount}/{roomInfo.MaxPlayers}\n";
+        RoomInfo info = roomList[i];
+        if (info.RemovedFromList) // 不紀錄已關閉、滿了、或是隱藏的房間
+          cachedRoomList.Remove(info.Name);
+        else
+          cachedRoomList[info.Name] = info;
+      }
+    }
+
+    private void printRoomList()
+    {
+      var message = $"Room List: {cachedRoomList.Count} rooms\n";
+      foreach (var roomInfo in cachedRoomList)
+      {
+        message += $"  {roomInfo.Key}, {roomInfo.Value.IsOpen}, " +
+                   $"{roomInfo.Value.PlayerCount}/{roomInfo.Value.MaxPlayers}\n";
       }
 
       Debug.Log(message);
