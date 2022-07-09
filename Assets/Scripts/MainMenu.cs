@@ -27,8 +27,6 @@ namespace Tanks
 
     private GameObject m_roomUI;
 
-    private Dictionary<string, RoomInfo> cachedRoomList = new Dictionary<string, RoomInfo>();
-
     void Awake()
     {
       if (instance != null)
@@ -73,8 +71,6 @@ namespace Tanks
       m_joinGameButton.interactable = true;
 
       m_roomUI.SetActive(false);
-      
-      cachedRoomList.Clear();
     }
 
     public override void OnEnable()
@@ -123,7 +119,7 @@ namespace Tanks
       var message = $"Lobby List: {lobbyStatistics.Count} lobbies\n";
       foreach (var lobbyInfo in lobbyStatistics)
       {
-        message += $"  {lobbyInfo.Name}, {lobbyInfo.Type}, {lobbyInfo.PlayerCount} rooms, " +
+        message += $"  {lobbyInfo.Name}, {lobbyInfo.Type}, {lobbyInfo.RoomCount} rooms, " +
                    $"{lobbyInfo.PlayerCount} players\n";
       }
 
@@ -132,8 +128,6 @@ namespace Tanks
 
     public void JoinLobby()
     {
-      cachedRoomList.Clear();
-
       var typedLobby = new TypedLobby(m_lobbyInput.text, LobbyType.Default);
       PhotonNetwork.JoinLobby(typedLobby);
     }
@@ -147,7 +141,6 @@ namespace Tanks
     {
       Debug.Log($"Joined Lobby: {PhotonNetwork.CurrentLobby.Name} {PhotonNetwork.CurrentLobby.Type}");
       m_leaveLobbyButton.interactable = true;
-      cachedRoomList.Clear();
     }
 
     public override void OnLeftLobby()
@@ -155,37 +148,6 @@ namespace Tanks
       // 離開 Lobby 的時候，會加回 Default Lobby
       Debug.Log($"Left Lobby: {PhotonNetwork.CurrentLobby.Name} {PhotonNetwork.CurrentLobby.Type}");
       m_leaveLobbyButton.interactable = false;
-      cachedRoomList.Clear();
-    }
-
-    public override void OnRoomListUpdate(List<RoomInfo> roomList)
-    {
-      UpdateCachedRoomList(roomList);
-      printRoomList();
-    }
-
-    private void UpdateCachedRoomList(List<RoomInfo> roomList)
-    {
-      for(int i=0; i < roomList.Count; i++)
-      {
-        RoomInfo info = roomList[i];
-        if (info.RemovedFromList) // 不紀錄已關閉、滿了、或是隱藏的房間
-          cachedRoomList.Remove(info.Name);
-        else
-          cachedRoomList[info.Name] = info;
-      }
-    }
-
-    private void printRoomList()
-    {
-      var message = $"Room List: {cachedRoomList.Count} rooms\n";
-      foreach (var roomInfo in cachedRoomList)
-      {
-        message += $"  {roomInfo.Key}, {roomInfo.Value.IsOpen}, " +
-                   $"{roomInfo.Value.PlayerCount}/{roomInfo.Value.MaxPlayers}\n";
-      }
-
-      Debug.Log(message);
     }
 
     public void CreateGame()
