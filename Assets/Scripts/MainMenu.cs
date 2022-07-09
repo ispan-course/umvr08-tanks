@@ -132,6 +132,12 @@ namespace Tanks
       PhotonNetwork.JoinLobby(typedLobby);
     }
 
+    public void JoinSQLLobby()
+    {
+      var typedLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
+      PhotonNetwork.JoinLobby(typedLobby);
+    }
+
     public void LeaveLobby()
     {
       PhotonNetwork.LeaveLobby();
