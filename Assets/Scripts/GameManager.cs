@@ -12,9 +12,9 @@ namespace Tanks
     public static GameObject localPlayer;
     private GameObject defaultSpawnPoint;
 
-    private const string MAP_PROP_KEY = "map";
-    private const string GAME_MODE_PROP_KEY = "gm";
-    private const string AI_PROP_KEY = "ai";
+    private const string MAP_PROP_KEY = "C0";
+    private const string GAME_MODE_PROP_KEY = "C1";
+    private const string AI_PROP_KEY = "C2";
 
     string gameVersion = "1";
 
@@ -64,7 +64,7 @@ namespace Tanks
       Debug.LogWarningFormat("PUN Disconnected was called by PUN with reason {0}", cause);
     }
 
-    public void CreateGame(int map, int gameMode)
+    public void CreateGame(int map, int gameMode, TypedLobby type)
     {
       var roomOptions = new RoomOptions();
       roomOptions.CustomRoomPropertiesForLobby
@@ -77,19 +77,24 @@ namespace Tanks
         };
       roomOptions.MaxPlayers = 4;
 
-      PhotonNetwork.CreateRoom(null, roomOptions, null);
+      PhotonNetwork.CreateRoom(null, roomOptions, type);
     }
 
-    public void JoinRandomGame(int map, int gameMode)
+    public void JoinRandomGame(int map, int gameMode, TypedLobby type, string sqlFilter)
     {
       byte expectedMaxPlayers = 0;
-      var expectedCustomRoomProperties
-        = new ExitGames.Client.Photon.Hashtable
+      ExitGames.Client.Photon.Hashtable expectedCustomRoomProperties = null;
+
+      if (type.Type == LobbyType.Default)
+      {
+        expectedCustomRoomProperties = new ExitGames.Client.Photon.Hashtable
         {
           { MAP_PROP_KEY, map },
           { GAME_MODE_PROP_KEY, gameMode }
         };
-      PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers);
+      }
+
+      PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers, MatchmakingMode.FillRoom, type, sqlFilter);
     }
 
     public void JoinGameRoom()

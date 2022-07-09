@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
@@ -9,6 +10,8 @@ namespace Tanks
 {
   public class StatisticsUI : MonoBehaviourPunCallbacks
   {
+    public static StatisticsUI instance;
+
     private int CountOfPlayers = -1;
     public TMP_Text CountOfPlayersText;
 
@@ -37,6 +40,17 @@ namespace Tanks
     public TMP_Text CountOfPlayerOnLobbyText;
 
     private Dictionary<string, RoomInfo> cachedRoomList = new Dictionary<string, RoomInfo>();
+
+    private void Awake()
+    {
+      if (instance != null)
+      {
+        DestroyImmediate(gameObject);
+        return;
+      }
+
+      instance = this;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -134,6 +148,11 @@ namespace Tanks
         CountOfPlayersOnMaster = PhotonNetwork.CountOfPlayersOnMaster;
         CountOfPlayersOnMasterText.text = CountOfPlayersOnMaster.ToString();
       }
+    }
+
+    public void ClearRoomList()
+    {
+      cachedRoomList.Clear();
     }
 
     private void UpdateCachedRoomList(List<RoomInfo> roomList)
