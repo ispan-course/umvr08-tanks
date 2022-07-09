@@ -27,22 +27,22 @@ namespace Tanks
     // Update is called once per frame
     void Update()
     {
-      UpdateLobbyInfo();
+      UpdateApplicationInfo();
     }
 
-    private void UpdateLobbyInfo()
+    private void UpdateApplicationInfo()
     {
       if (PhotonNetwork.NetworkingClient.Server == ServerConnection.MasterServer)
       {
-        RefreshLobbyInfo();
+        RefreshApplicationInfo();
       }
       else
       {
-        ResetLobbyInfo();
+        ResetApplicationInfo();
       }
     }
 
-    private void ResetLobbyInfo()
+    private void ResetApplicationInfo()
     {
       if (CountOfPlayers != -1)
       {
@@ -66,11 +66,11 @@ namespace Tanks
       }
     }
 
-    private void RefreshLobbyInfo()
+    private void RefreshApplicationInfo()
     {
       if (!PhotonNetwork.IsConnected)
       {
-        ResetLobbyInfo();
+        ResetApplicationInfo();
         return;
       }
 
