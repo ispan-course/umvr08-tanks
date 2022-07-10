@@ -117,6 +117,7 @@ namespace Tanks
     {
       if (PhotonNetwork.IsMasterClient)
       {
+        PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.LoadLevel("GameScene");
       }
     }
@@ -124,6 +125,16 @@ namespace Tanks
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
       Debug.Log($"Join Random Room Failed: ({returnCode}) {message}");
+    }
+
+    public void LeaveGame()
+    {
+      PhotonNetwork.LeaveRoom();
+    }
+
+    public override void OnLeftRoom()
+    {
+      PhotonNetwork.LoadLevel("MainScene");
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
