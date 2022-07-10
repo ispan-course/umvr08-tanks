@@ -109,8 +109,12 @@ namespace Tanks
 
     public override void OnJoinedRoom()
     {
-      Debug.Log($"Joined room: {PhotonNetwork.CurrentRoom.Name} {PhotonNetwork.CurrentRoom.CustomProperties}");
+      Debug.Log($"Joined room: {PhotonNetwork.CurrentRoom.Name} " +
+                $"{PhotonNetwork.CurrentRoom.CustomProperties}");
+    }
 
+    public void EnterGame()
+    {
       if (PhotonNetwork.IsMasterClient)
       {
         PhotonNetwork.LoadLevel("GameScene");

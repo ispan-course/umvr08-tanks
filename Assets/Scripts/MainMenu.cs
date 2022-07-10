@@ -27,6 +27,8 @@ namespace Tanks
     private Button m_joinGameButton;
 
     private GameObject m_roomUI;
+    private List<TMP_Text> m_playerNameTexts = new List<TMP_Text>();
+    private Button m_enterGameButton;
 
     void Awake()
     {
@@ -53,6 +55,11 @@ namespace Tanks
       m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
 
       m_roomUI = transform.FindAnyChild<Transform>("RoomUI").gameObject;
+      m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName01")); 
+      m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName02")); 
+      m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName03")); 
+      m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName04")); 
+      m_enterGameButton = transform.FindAnyChild<Button>("EnterGameButton");
 
       ResetUI();
     }
@@ -73,6 +80,11 @@ namespace Tanks
       m_joinGameButton.interactable = true;
 
       m_roomUI.SetActive(false);
+      foreach (var mPlayerNameText in m_playerNameTexts)
+      {
+        mPlayerNameText.text = "n/a";
+      }
+      m_enterGameButton.interactable = true;
     }
 
     public override void OnEnable()
@@ -180,6 +192,47 @@ namespace Tanks
       var sqlLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
       var sqlLobbyFilter = m_lobbyFilter.text;
       GameManager.instance.JoinRandomGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1, sqlLobby, sqlLobbyFilter);
+    }
+    
+    public override void OnJoinedRoom()
+    {
+      m_lobbyUI.SetActive(false);
+      m_roomUI.SetActive(true);
+
+      // m_enterGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+
+      refreshPlayerList();
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+      refreshPlayerList();
+    }
+
+    public override void OnPlayerLeftRoom(Player newPlayer)
+    {
+      refreshPlayerList();
+    }
+
+    private void refreshPlayerList()
+    {
+      // 可以試試看，把這行搬到 OnJoinedRoom event 裏面，會有什麼現象
+      m_enterGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+
+      var i = 0;
+      for (i = 0; i < PhotonNetwork.PlayerList.Length; i++)
+      {
+        m_playerNameTexts[i].text = PhotonNetwork.PlayerList[i].NickName;
+      }
+      for (; i < 4; i++)
+      {
+        m_playerNameTexts[i].text = "n/a";
+      }
+    }
+
+    public void EnterGame()
+    {
+      GameManager.instance.EnterGame();
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
