@@ -16,6 +16,7 @@ namespace Tanks
 
     private GameObject m_loginUI;
     private TMP_InputField  m_accountInput;
+    private TMP_InputField  m_passwordInput;
     private Button m_loginButton;
 
     private GameObject m_lobbyUI;
@@ -47,6 +48,7 @@ namespace Tanks
 
       m_loginUI = transform.FindAnyChild<Transform>("LoginUI").gameObject;
       m_accountInput = transform.FindAnyChild<TMP_InputField>("AccountInput");
+      m_passwordInput = transform.FindAnyChild<TMP_InputField>("PasswordInput");
       m_loginButton = transform.FindAnyChild<Button>("LoginButton");
 
       m_lobbyUI = transform.FindAnyChild<Transform>("LobbyUI").gameObject;
@@ -76,6 +78,7 @@ namespace Tanks
     {
       m_loginUI.SetActive(true);
       m_accountInput.interactable = true;
+      m_passwordInput.interactable = true;
       m_loginButton.interactable = true;
 
       m_lobbyUI.SetActive(false);
@@ -139,21 +142,41 @@ namespace Tanks
         return;
       }
 
+      if (string.IsNullOrEmpty(m_passwordInput.text))
+      {
+        Debug.Log("Please input your password!!");
+        return;
+      }
+
       m_accountInput.interactable = false;
+      m_passwordInput.interactable = false;
       m_loginButton.interactable = false;
 
-      if (!GameManager.instance.ConnectToServer(m_accountInput.text))
-      {
-        Debug.Log("Connect to PUN Failed!!");
-        m_accountInput.interactable = true;
-        m_loginButton.interactable = true;
-      }
+      GameManager.instance.ConnectToServer(m_accountInput.text, m_passwordInput.text);
+      // if (!GameManager.instance.ConnectToServer(m_accountInput.text, m_passwordInput.text))
+      // {
+      //   Debug.Log("Connect to PUN Failed!!");
+      //   m_accountInput.interactable = true;
+      //   m_passwordInput.interactable = true;
+      //   m_loginButton.interactable = true;
+      // }
     }
 
-    public override void OnConnectedToMaster()
+    public void OnLoginSuccess()
     {
+      Debug.Log("Main Menu: Login success");
+      
       m_loginUI.SetActive(false);
       m_lobbyUI.SetActive(true);
+    }
+
+    public void OnLoginFailed(string reason)
+    {
+      Debug.Log("Main Menu: Login failed: " + reason);
+
+      m_accountInput.interactable = true;
+      m_passwordInput.interactable = true;
+      m_loginButton.interactable = true;
     }
 
     public override void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)

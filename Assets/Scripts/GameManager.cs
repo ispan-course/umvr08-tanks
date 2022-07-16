@@ -43,25 +43,44 @@ namespace Tanks
       PhotonNetwork.GameVersion = gameVersion;
     }
 
-    public bool ConnectToServer(string account)
+    public bool ConnectToServer(string account, string password)
     {
       PhotonNetwork.NickName = account;
+      
+      var authValues = new AuthenticationValues();
+      authValues.AuthType = CustomAuthenticationType.Custom;
+      authValues.AddAuthParameter("user", account);
+      authValues.AddAuthParameter("pass", password);
+      PhotonNetwork.AuthValues = authValues;
+
       return PhotonNetwork.ConnectUsingSettings();
     }
 
     public override void OnConnected()
     {
-      Debug.Log("PUN Connected");
-    }
-
-    public override void OnConnectedToMaster()
-    {
-      Debug.Log("PUN Connected to Master");
+      Debug.Log("Game Manager: PUN Connected");
     }
 
     public override void OnDisconnected(DisconnectCause cause)
     {
       Debug.LogWarningFormat("PUN Disconnected was called by PUN with reason {0}", cause);
+    }
+
+    public override void OnCustomAuthenticationFailed(string debugMessage)
+    {
+      MainMenu.instance.OnLoginFailed(debugMessage);
+    }
+    
+    // public override void OnCustomAuthenticationResponse(Dictionary<string, object> data)
+    // {
+    //   Debug.Log(data);
+    //   MainMenu.instance.OnLoginSuccess();
+    // }
+
+    public override void OnConnectedToMaster()
+    {
+      Debug.Log("Game Manager: PUN Connected to Master");
+      MainMenu.instance.OnLoginSuccess();
     }
 
     public void CreateGame(int map, int gameMode, TypedLobby type)
