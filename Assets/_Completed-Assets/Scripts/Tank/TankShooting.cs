@@ -1,4 +1,8 @@
-﻿using Photon.Pun;
+﻿using System.Collections.Generic;
+using System.Linq;
+using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +27,7 @@ namespace Complete
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
 
+        private int m_FireTimes;
 
         public override void OnEnable()
         {
@@ -104,8 +109,38 @@ namespace Complete
 
             // Reset the launch force.  This is a precaution in case of missing button events.
             m_CurrentLaunchForce = m_MinLaunchForce;
+
+            m_FireTimes++;
+            var parameters = new Dictionary<string, object>
+            {
+                { "score", m_FireTimes }
+            };
+            PhotonNetwork.WebRpc("api/scores", parameters);
         }
-        
+
+        public override void OnWebRpcResponse(OperationResponse operationResponse)
+        {
+            if (operationResponse.ReturnCode != 0) {
+                Debug.Log("WebRPC 操作失敗. Response: " + operationResponse.ToStringFull());
+                return;
+            }
+
+            WebRpcResponse webRpcResponse = new WebRpcResponse (operationResponse);
+            if (webRpcResponse.ResultCode != 0)
+            {
+                Debug.Log("WebRPC '" + webRpcResponse.Name + "發生問題. Error: " + webRpcResponse.ResultCode + " Message: " + webRpcResponse.Message);
+                return;
+            }
+
+            // 列出回傳參數值，像是 排名、訊息等
+            var parameters = webRpcResponse.Parameters;
+
+            var message = parameters
+                .Aggregate("Leaderboard: \n", (current, pair) =>
+                    current + $"User({pair.Key}): Score: {pair.Value}\n");
+            Debug.Log(message);
+        }
+
         [PunRPC]
         private void FireOther(Vector3 pos)
         {            
