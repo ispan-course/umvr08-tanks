@@ -46,12 +46,16 @@ namespace Tanks
 
     public bool ConnectToServer(string account, string password)
     {
-      PhotonNetwork.NickName = account;
-      
       var authValues = new AuthenticationValues();
       authValues.AuthType = CustomAuthenticationType.Custom;
-      authValues.AddAuthParameter("user", account);
-      authValues.AddAuthParameter("pass", password);
+      authValues.SetAuthPostData(new Dictionary<string, object>
+      {
+        { "user", account },
+        { "pass", password },
+        { "nickname", account },
+        { "age", 18 },
+        { "address", "台北" },
+      });
       PhotonNetwork.AuthValues = authValues;
 
       return PhotonNetwork.ConnectUsingSettings();
@@ -71,7 +75,7 @@ namespace Tanks
     {
       MainMenu.instance.OnLoginFailed(debugMessage);
     }
-    
+
     public override void OnCustomAuthenticationResponse(Dictionary<string, object> data)
     {
       foreach (var kvp in data)
@@ -83,6 +87,11 @@ namespace Tanks
         }
         else
         {
+          if (kvp.Key == "nickname")
+          {
+            PhotonNetwork.NickName = (string)kvp.Value;
+          }
+
           Debug.Log($"User Data: {kvp.Key} = {kvp.Value}");
         }
       }
