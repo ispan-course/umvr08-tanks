@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -71,11 +72,21 @@ namespace Tanks
       MainMenu.instance.OnLoginFailed(debugMessage);
     }
     
-    // public override void OnCustomAuthenticationResponse(Dictionary<string, object> data)
-    // {
-    //   Debug.Log(data);
-    //   MainMenu.instance.OnLoginSuccess();
-    // }
+    public override void OnCustomAuthenticationResponse(Dictionary<string, object> data)
+    {
+      foreach (var kvp in data)
+      {
+        if (kvp.Value.GetType().IsArray)
+        {
+          var list = (object[])kvp.Value;
+          Debug.Log($"User Data: {kvp.Key} = [{string.Join(",", list.Select(x => x.ToString()).ToArray())}]");
+        }
+        else
+        {
+          Debug.Log($"User Data: {kvp.Key} = {kvp.Value}");
+        }
+      }
+    }
 
     public override void OnConnectedToMaster()
     {
